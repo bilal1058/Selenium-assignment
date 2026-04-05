@@ -28,9 +28,7 @@ services:
     ports:
       - "8300:8200"
     volumes:
-      # Instructors requirement: Attach a volume for the code instead of Dockerfile build
       - ./backend:/app/backend
-      # We also mount the build directory (Jenkins would have built this)
       - ./backend/static/build:/app/backend/static/build
     working_dir: /app/backend
     command: >
