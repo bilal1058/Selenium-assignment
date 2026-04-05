@@ -9,6 +9,7 @@ const Doctors = () => {
   const [editMode, setEditMode] = useState(false);
   const [selectedDoctor, setSelectedDoctor] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [phoneError, setPhoneError] = useState('');
   const [formData, setFormData] = useState({
     first_name: '',
     last_name: '',
@@ -48,10 +49,16 @@ const Doctors = () => {
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
+    const sanitizedValue = name === 'phone' ? value.replace(/\D/g, '').slice(0, 11) : value;
+
     setFormData(prev => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value
+      [name]: type === 'checkbox' ? checked : sanitizedValue
     }));
+
+    if (name === 'phone') {
+      setPhoneError('');
+    }
   };
 
   const resetForm = () => {
@@ -72,10 +79,18 @@ const Doctors = () => {
     });
     setEditMode(false);
     setSelectedDoctor(null);
+    setPhoneError('');
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!/^\d{11}$/.test(formData.phone)) {
+      setPhoneError('Phone number must be exactly 11 digits.');
+      toast.error('Phone number must be exactly 11 digits');
+      return;
+    }
+
     try {
       const submitData = {
         ...formData,
@@ -266,7 +281,19 @@ const Doctors = () => {
                     </div>
                     <div className="col-md-6">
                       <label className="form-label">Phone *</label>
-                      <input type="tel" className="form-control" name="phone" value={formData.phone} onChange={handleInputChange} required />
+                      <input
+                        type="tel"
+                        className={`form-control ${phoneError ? 'is-invalid' : ''}`}
+                        name="phone"
+                        value={formData.phone}
+                        onChange={handleInputChange}
+                        maxLength={11}
+                        inputMode="numeric"
+                        placeholder="03001234567"
+                        required
+                      />
+                      <div className="invalid-feedback">{phoneError || 'Phone number must be exactly 11 digits.'}</div>
+                      <small className="text-danger">Phone number must be exactly 11 digits, otherwise doctor will not be created/updated.</small>
                     </div>
                     <div className="col-md-6">
                       <label className="form-label">Specialization *</label>

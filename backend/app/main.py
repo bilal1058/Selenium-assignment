@@ -1,3 +1,6 @@
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+import os
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
@@ -28,7 +31,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
+app.mount("/static", StaticFiles(directory=os.path.join(os.path.dirname(__file__), "../static/build/static")), name="static")
 # Include routers
 app.include_router(auth.router)  # Auth routes (no /api prefix as it's already in router)
 app.include_router(patient.router, prefix="/api")
@@ -152,14 +155,6 @@ def create_default_admin():
     finally:
         db.close()
 
-@app.get("/")
-def root():
-    return {
-        "message": "Welcome to Hospital Management System API",
-        "docs": "/api/docs",
-        "health": "/health"
-    }
-
 @app.get("/health")
 def health_check():
     return {"status": "healthy", "environment": settings.ENVIRONMENT}
@@ -187,3 +182,8 @@ def api_info():
             "receptionist": "Manage patients, appointments, and billing"
         }
     }
+
+@app.get("/{full_path:path}")
+def serve_react_app(full_path: str):
+    index_path = os.path.join(os.path.dirname(__file__), "../static/build/index.html")
+    return FileResponse(index_path)

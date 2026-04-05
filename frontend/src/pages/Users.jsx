@@ -7,6 +7,7 @@ const Users = () => {
   const [doctors, setDoctors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [phoneError, setPhoneError] = useState('');
   const [formData, setFormData] = useState({
     username: '',
     email: '',
@@ -44,11 +45,23 @@ const Users = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    const sanitizedValue = name === 'phone' ? value.replace(/\D/g, '').slice(0, 11) : value;
+    setFormData({ ...formData, [name]: sanitizedValue });
+
+    if (name === 'phone') {
+      setPhoneError('');
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (formData.phone && !/^\d{11}$/.test(formData.phone)) {
+      setPhoneError('Phone number must be exactly 11 digits.');
+      toast.error('Phone number must be exactly 11 digits');
+      return;
+    }
+
     try {
       const payload = { ...formData };
       if (payload.role !== 'doctor') {
@@ -69,6 +82,7 @@ const Users = () => {
         role: 'receptionist',
         doctor_id: ''
       });
+      setPhoneError('');
       fetchUsers();
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Failed to create user');
@@ -228,11 +242,9 @@ const Users = () => {
                         name="username"
                         value={formData.username}
                         onChange={handleChange}
-                        pattern="^[a-zA-Z0-9_]+$"
-                        title="Only letters, numbers, and underscores"
                         required
                       />
-                      <small className="text-muted">Letters, numbers, underscores only</small>
+                      <small className="text-muted">Use letters, numbers, dot, underscore, or hyphen.</small>
                     </div>
                     <div className="col-md-6 mb-3">
                       <label className="form-label">Full Name *</label>
@@ -259,15 +271,17 @@ const Users = () => {
                     <div className="col-md-6 mb-3">
                       <label className="form-label">Phone</label>
                       <input
-                        type="text"
-                        className="form-control"
+                        type="tel"
+                        className={`form-control ${phoneError ? 'is-invalid' : ''}`}
                         name="phone"
                         value={formData.phone}
                         onChange={handleChange}
                         placeholder="03001234567"
-                        pattern="^03\d{9}$"
-                        title="11 digits starting with 03"
+                        maxLength={11}
+                        inputMode="numeric"
                       />
+                      <div className="invalid-feedback">{phoneError || 'Phone number must be exactly 11 digits.'}</div>
+                      <small className="text-danger">Phone number must be exactly 11 digits, otherwise account will not be created.</small>
                     </div>
                     <div className="col-md-6 mb-3">
                       <label className="form-label">Password *</label>

@@ -9,6 +9,8 @@ const Patients = () => {
   const [editMode, setEditMode] = useState(false);
   const [selectedPatient, setSelectedPatient] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [phoneError, setPhoneError] = useState('');
+  const [emergencyContactError, setEmergencyContactError] = useState('');
   const [formData, setFormData] = useState({
     first_name: '',
     last_name: '',
@@ -40,7 +42,18 @@ const Patients = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    const sanitizedValue = name === 'phone' || name === 'emergency_contact'
+      ? value.replace(/\D/g, '').slice(0, 11)
+      : value;
+
+    setFormData(prev => ({ ...prev, [name]: sanitizedValue }));
+
+    if (name === 'phone') {
+      setPhoneError('');
+    }
+    if (name === 'emergency_contact') {
+      setEmergencyContactError('');
+    }
   };
 
   const resetForm = () => {
@@ -59,10 +72,25 @@ const Patients = () => {
     });
     setEditMode(false);
     setSelectedPatient(null);
+    setPhoneError('');
+    setEmergencyContactError('');
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!/^\d{11}$/.test(formData.phone)) {
+      setPhoneError('Phone number must be exactly 11 digits.');
+      toast.error('Phone number must be exactly 11 digits');
+      return;
+    }
+
+    if (formData.emergency_contact && !/^\d{11}$/.test(formData.emergency_contact)) {
+      setEmergencyContactError('Emergency contact must be exactly 11 digits.');
+      toast.error('Emergency contact must be exactly 11 digits');
+      return;
+    }
+
     try {
       if (editMode) {
         await patientAPI.update(selectedPatient.id, formData);
@@ -238,7 +266,19 @@ const Patients = () => {
                     </div>
                     <div className="col-md-6">
                       <label className="form-label">Phone *</label>
-                      <input type="tel" className="form-control" name="phone" value={formData.phone} onChange={handleInputChange} required />
+                      <input
+                        type="tel"
+                        className={`form-control ${phoneError ? 'is-invalid' : ''}`}
+                        name="phone"
+                        value={formData.phone}
+                        onChange={handleInputChange}
+                        maxLength={11}
+                        inputMode="numeric"
+                        placeholder="03001234567"
+                        required
+                      />
+                      <div className="invalid-feedback">{phoneError || 'Phone number must be exactly 11 digits.'}</div>
+                      <small className="text-danger">Phone number must be exactly 11 digits, otherwise patient will not be created/updated.</small>
                     </div>
                     <div className="col-md-4">
                       <label className="form-label">Date of Birth *</label>
@@ -268,7 +308,18 @@ const Patients = () => {
                     </div>
                     <div className="col-md-6">
                       <label className="form-label">Emergency Contact</label>
-                      <input type="tel" className="form-control" name="emergency_contact" value={formData.emergency_contact} onChange={handleInputChange} />
+                      <input
+                        type="tel"
+                        className={`form-control ${emergencyContactError ? 'is-invalid' : ''}`}
+                        name="emergency_contact"
+                        value={formData.emergency_contact}
+                        onChange={handleInputChange}
+                        maxLength={11}
+                        inputMode="numeric"
+                        placeholder="03001234567"
+                      />
+                      <div className="invalid-feedback">{emergencyContactError || 'Emergency contact must be exactly 11 digits.'}</div>
+                      <small className="text-danger">If provided, emergency contact must be exactly 11 digits.</small>
                     </div>
                     <div className="col-md-6">
                       <label className="form-label">Allergies</label>
