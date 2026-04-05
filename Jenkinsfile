@@ -16,13 +16,14 @@ pipeline {
             steps {
                 script {
                     echo 'Building Frontend...'
-                    docker.image('node:18-alpine').inside {
+                    docker.image('node:18-alpine').inside('-u root') {
                         sh '''
                             cd frontend
                             npm install
                             npm run build
                             mkdir -p ../backend/static/build
                             cp -r build/* ../backend/static/build/
+                            chmod -R 777 ../backend/static/build
                         '''
                     }
                 }
