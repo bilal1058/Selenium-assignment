@@ -6,45 +6,50 @@ pipeline {
     }
 
     stages {
+
         stage('Checkout') {
             steps {
                 checkout scm
             }
         }
+
         stage('Build Frontend') {
+            when {
+                changeset "**/frontend/**"
+            }
             steps {
                 script {
                     echo 'Building Frontend...'
                     sh '''
                         docker run --rm -u root -v ${WORKSPACE}:/workspace node:18-alpine sh -c "
-                            cp -r /workspace/frontend /tmp/frontend &&
-                            cd /tmp/frontend &&
+                            cd /workspace/frontend &&
                             npm install &&
                             npm run build &&
                             mkdir -p /workspace/backend/static/build &&
-                            cp -r build/* /workspace/backend/static/build/ &&
-                            chmod -R 777 /workspace/backend/static/build
+                            cp -r build/* /workspace/backend/static/build/
                         "
                     '''
                 }
             }
         }
-        stage('Deploy (Part-II)') {
+
+        stage('Deploy (Fast)') {
             steps {
                 script {
-                    echo 'Launching Containerized Deployment...'
-                    sh "docker-compose -f ${DOCKER_COMPOSE_FILE} -p hospital_v2 up -d --build"
+                    echo 'Deploying without rebuild...'
+                    sh "docker-compose -f ${DOCKER_COMPOSE_FILE} -p hospital_v2 up -d"
                 }
             }
         }
+
     }
 
     post {
         success {
-            echo 'Deployment successful! Part-II is live on Port 8300.'
+            echo 'Deployment successful. App running on port 8300.'
         }
         failure {
-            echo 'Deployment failed. Checking logs...'
+            echo 'Deployment failed. Showing logs...'
             sh "docker-compose -f ${DOCKER_COMPOSE_FILE} -p hospital_v2 logs"
         }
     }
