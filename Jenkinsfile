@@ -37,7 +37,8 @@ pipeline {
             steps {
                 script {
                     echo 'Deploying without rebuild...'
-                    sh "docker-compose -f ${DOCKER_COMPOSE_FILE} -p hospital_v2 up -d"
+                    sh """docker rm -f hospital-web-v2 || true
+                           docker-compose -f ${DOCKER_COMPOSE_FILE} -p hospital_v2 up -d"""
                 }
             }
         }
