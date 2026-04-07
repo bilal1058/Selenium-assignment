@@ -20,8 +20,7 @@ services:
       - hospital-network-v2
 
   web-v2:
-    # ✅ Use pre-built image with deps already installed (NOT python:3.11-slim)
-    image: bilal888/hospital-management:latest
+    image: python:3.11-slim
     container_name: hospital-web-v2
     restart: always
     environment:
@@ -31,11 +30,12 @@ services:
     ports:
       - "8300:8200"
     volumes:
-      # ✅ Mount code ONLY - dependencies already in image
       - ./backend:/app/backend
     working_dir: /app/backend
-    # ✅ Simple command - no apt-get, no pip install!
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8200 --reload
+    command: >
+      sh -c "apt-get update && apt-get install -y postgresql-client && 
+             pip install --no-cache-dir -r requirements.txt && 
+             uvicorn app.main:app --host 0.0.0.0 --port 8200"
     depends_on:
       db-v2:
         condition: service_healthy
