@@ -8,7 +8,9 @@ pipeline {
     
     stages {
         stage('Checkout') {
-            steps { checkout scm }
+            steps { 
+                checkout scm 
+            }
         }
         
         stage('Deploy Application') {
@@ -28,7 +30,7 @@ pipeline {
                         -v ${WORKSPACE}/selenium-tests:/tests \
                         -w /tests \
                         bilal888/selenium-test:latest \
-                        pytest test_all.py -v --html=report.html --self-contained-html --tb=short || true
+                        pytest test_all.py -v --html=report.html --self-contained-html --tb=short
                 '''
             }
         }
@@ -36,20 +38,31 @@ pipeline {
     
     post {
         always {
-            archiveArtifacts artifacts: 'selenium-tests/report.html', allowEmptyArchive: true
-            
-            emailext (
-                subject: "Build ${currentBuild.result}: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-                body: """
-                    <h2>Test Results</h2>
-                    <p><b>Result:</b> ${currentBuild.result}</p>
-                    <p><b>Build:</b> ${env.BUILD_URL}</p>
-                    <p>Report: ${env.BUILD_URL}artifact/selenium-tests/report.html</p>
-                """,
-                to: '${env.GIT_COMMITTER_EMAIL}',
-                attachLog: true,
-                attachmentsPattern: 'selenium-tests/report.html'
-            )
+            script {
+                // Fix Git safe directory issue
+                sh "git config --global --add safe.directory ${env.WORKSPACE}"
+
+                // Extract committer email
+                def committer = sh(
+                    script: "git log -1 --pretty=format:'%ae'",
+                    returnStdout: true
+                ).trim()
+
+                archiveArtifacts artifacts: 'selenium-tests/report.html', allowEmptyArchive: true
+                
+                emailext (
+                    to: committer,
+                    subject: "Build ${currentBuild.result}: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                    body: """
+                        <h2>Test Results</h2>
+                        <p><b>Result:</b> ${currentBuild.result}</p>
+                        <p><b>Build:</b> ${env.BUILD_URL}</p>
+                        <p>Report: ${env.BUILD_URL}artifact/selenium-tests/report.html</p>
+                    """,
+                    attachLog: true,
+                    attachmentsPattern: 'selenium-tests/report.html'
+                )
+            }
             
             sh '$COMPOSE down || true'
         }
