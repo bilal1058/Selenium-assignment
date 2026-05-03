@@ -24,4 +24,8 @@ COPY --from=frontend-builder /app/frontend/build/ /app/backend/static/build/
 WORKDIR /app/backend
 EXPOSE 8200
 
+<<<<<<< HEAD
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8202"]
+=======
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8202"]
+>>>>>>> c692f41f71528c16af59512032c3225c659f21a6
