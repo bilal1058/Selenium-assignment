@@ -1,9 +1,9 @@
 # --- Part-I Local Files (Exclude for Project Safety) ---
-docker-compose.yml
-Dockerfile
+docker-compose.part2.yml
 Hospital.zip
 *.zip
 hospital-deployment-ready.zip
+.gitignore
 
 # --- Environment & Secrets ---
 .env
@@ -22,6 +22,7 @@ node_modules/
 frontend/node_modules/
 dist/
 build/
+frontend/build/
 .npm/
 
 # --- IDE & OS Junk ---
@@ -32,3 +33,13 @@ Thumbs.db
 __pycache__/
 *.py[cod]
 *$py.class
+Assignment-3.pdf
+
+# --- Selenium Test Reports ---
+selenium-tests/report.html
+selenium-tests/assets/
+selenium-tests/.pytest_cache/
+
+# --- Logs ---
+*.log
+logs/

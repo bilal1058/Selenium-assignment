@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: hospital-db
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-yourpassword}
+      POSTGRES_DB: ${POSTGRES_DB:-hospital_db}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d hospital_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - hospital-network
+
+  web:
+    image: bilal888/hospital-management:latest
+    container_name: hospital-web
+    restart: always
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-yourpassword}@db:5432/${POSTGRES_DB:-hospital_db}
+      SECRET_KEY: ${SECRET_KEY:-secret-key-bilal878}
+      ENVIRONMENT: production
+    ports:
+      - "8202:8200"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - hospital-network
+
+volumes:
+  postgres_data:
+
+networks:
+  hospital-network:
+    driver: bridge
