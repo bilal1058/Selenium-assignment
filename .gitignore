@@ -1,45 +1,35 @@
-# --- Part-I Local Files (Exclude for Project Safety) ---
-docker-compose.part2.yml
-Hospital.zip
-*.zip
-hospital-deployment-ready.zip
-.gitignore
-
-# --- Environment & Secrets ---
+# Secrets
 .env
 backend/.env
-.venv/
-venv/
-env/
-python_venv/
 
-# --- Database ---
-*.db
-*.sqlite3
+# Local files
+Assignment-3.pdf
+*.pdf
 
-# --- Frontend Node Modules ---
+# Docker compose part 2 (Assignment 2 file)
+docker-compose.part2.yml
+
+# Node modules
 node_modules/
 frontend/node_modules/
-dist/
-build/
-frontend/build/
-.npm/
 
-# --- IDE & OS Junk ---
-.vscode/
-.idea/
-.DS_Store
-Thumbs.db
+# Python cache
 __pycache__/
 *.py[cod]
 *$py.class
-Assignment-3.pdf
 
-# --- Selenium Test Reports ---
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test reports
 selenium-tests/report.html
 selenium-tests/assets/
-selenium-tests/.pytest_cache/
+.pytest_cache/
 
-# --- Logs ---
+# Logs
 *.log
-logs/
