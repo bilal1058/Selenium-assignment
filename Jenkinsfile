@@ -16,7 +16,7 @@ pipeline {
                 sh '''
                     $COMPOSE down 2>/dev/null || true
                     $COMPOSE up -d
-                    sleep 15
+                    sleep 10
                 '''
             }
         }
@@ -94,8 +94,6 @@ Report: ${env.BUILD_URL}artifact/selenium-tests/report.html
                     attachmentsPattern: 'selenium-tests/report.html'
                 )
             }
-
-            sh "${COMPOSE} down || true"
         }
     }
 }
